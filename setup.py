@@ -7,7 +7,7 @@ setup(name='async-dispatch',
       author='Toby Patterson',
       author_email='me@tobys.email',
       license='MIT',
-      py_modules=['async_dispatch'],
+      packages=['async_dispatch'],
       tests_require=[
           'pytest',
       ],
@@ -16,7 +16,4 @@ setup(name='async-dispatch',
          'Programming Language :: Python :: 3.5',
 	 'Topic :: Communications'
       ],
-      extras_require={
-          ':python_version == "3.5"': ['asyncio']
-      },
 )
