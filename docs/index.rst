@@ -6,8 +6,6 @@
 Welcome to Async Dispatch's documentation!
 ==========================================
 
-Contents:
-
 .. toctree::
    :maxdepth: 2
 
