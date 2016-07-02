@@ -28,6 +28,7 @@ Basic Usage
 Documentation will soon be available on readthedocs.  Here is a brief summary.
 
 .. code:: python
+
    publisher = BasicPublisher()
    subscriber = BasicSubscriber()
 
