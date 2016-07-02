@@ -9,7 +9,7 @@ setup(
     author='Toby Patterson',
     author_email='me@tobys.email',
     license='MIT',
-    py_modules='async_dispatch',
+    py_modules=['async_dispatch'],
     tests_require=[
         'pytest',
     ],
