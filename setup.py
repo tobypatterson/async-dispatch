@@ -9,7 +9,6 @@ setup(
     author='Toby Patterson',
     author_email='me@tobys.email',
     license='MIT',
-    packages=['async_dispatch'],
     tests_require=[
         'pytest',
     ],
