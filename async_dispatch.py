@@ -2,7 +2,13 @@ import asyncio
 import collections
 import logging
 
+"""
+The event class is a lightweight container which stores the event name, a timestamp that should indicate when the
+event occured, and a payload.  Events are produced by publishers and consumed by subscribers.
 
+The payload can be any type that you wish, although a JSON string seems like a reasonable choice. Once produced,
+it is the job of the subscriber to identify and work with the payload.
+"""
 Event = collections.namedtuple('Event', ['name', 'ts', 'payload'])
 
 
@@ -27,9 +33,12 @@ class Dispatcher:
             self.add_publisher(publisher)
 
         # Add a list of subscribers
-        if hasattr(subscribers, '__iter__'):
-            for subscriber in subscribers:
-                self.add_subscriber(subscriber)
+        if subscribers:
+            if type(subscribers) is not list:
+                self.add_subscriber(subscribers)
+            elif hasattr(subscribers, '__iter__'):
+                for subscriber in subscribers:
+                    self.add_subscriber(subscriber)
 
     def add_publisher(self, publisher):
         """
@@ -46,6 +55,8 @@ class Dispatcher:
             raise TypeError('Publishers must implement the produce method()')
 
         self._publishers = publisher
+
+        return self
 
     def add_subscriber(self, subscriber):
         """
@@ -72,18 +83,21 @@ class Dispatcher:
             if isinstance(handler, str) and hasattr(subscriber, handler):
                 handler = getattr(subscriber, handler)
 
-            self.add_handler(event_name, handler)
+            self.add_handler(handler, event_name)
 
         return self
 
 
 
-    def add_handler( self, event_name, handler):
+    def add_handler( self, handler, event_name):
         """
-        Add a handler for an event
+        Add a method that will handle an event.
 
-        :param event_name: Event
+        Events of the given name will be dispatched to the method.
+        Usually a subscriber indicates which of its methods handles specific events.
+
         :param handler: Callable method
+        :param event_name: string Name of the event that the method handles
         :return: Self
         """
 
@@ -97,13 +111,15 @@ class Dispatcher:
 
         return self
 
-    def remove_handler(self, event_name, handler):
+    def remove_handler(self, handler, event_name):
         """
-        Remove a handler for an event
+        Remove a handler for an event.
 
-        :param event_name: string
-        :param handler: callable
-        :return:
+        If the handler is the only or last one for a given event, then that event will no longer be handled.
+
+        :param handler: callable Method that handles the event.
+        :param event_name: string The name of the event
+        :return: self
         """
 
         if not callable(handler):
@@ -121,9 +137,13 @@ class Dispatcher:
             if not len(self._subscribers[event_name]):
                 del self._subscribers[event_name]
 
+        return self
+
     async def dispatch(self, event):
         """
-        Dispatch an event.
+        Dispatch an event to handlers.
+
+        This can be useful if you wish to manually dispatch an event.
 
         :param event: Event
         :return: mixed
@@ -139,10 +159,20 @@ class Dispatcher:
                 if result and isinstance(result, Event):
                     return result
 
+    def get_events(self):
+        """
+        Get a list of events we are listening for.
+
+        :return: List
+        """
+        return self._subscribers.keys()
+
     async def start(self, max_events=None):
         """Start the server.
 
-        :param max_events: int
+        Events will be read by the publishers, and then dispatched to the subscribers
+
+        :param max_events: int Optional maximum number of events that the server should process.
         """
 
         if max_events:
@@ -169,8 +199,14 @@ class Dispatcher:
 
 
 class SubscriberInterface(object):
+    """
+    An interface for subscribers.
 
-    listen_to_events = None
+    The deviced class should implement the consume() method,
+    and define a list of events that the class will listen for.
+    """
+
+    listen_to_events = None  #: List of events that the subscriber can consume, or dictionary of event names to methods.
 
     def get_event_listeners(self):
 
@@ -180,8 +216,35 @@ class SubscriberInterface(object):
 
         return events
 
+    async def consume(self, event):
+        """
+        Consume an event.
+
+        A consumer has the option of returning a new event for other subscribers to consume.
+        It would not be a good idea to return the same event,
+        unless you have build implemented logic to avoid event loops.
+
+        :param event: Event
+        :return: Event
+        """
+        raise NotImplementedError()
+
+        #return Event
 
 class PublisherInterface(object):
+    """
+    An interface for publishers.
 
-    def __next__(self):
+    The deviced class should implement the produce method(),
+    which should return Events.
+    """
+
+    async def produce(self):
+        """
+        Produce an event.
+
+        :return: Event
+        """
         raise NotImplementedError()
+
+        #return Event('name', 0, '{}')

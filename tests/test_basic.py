@@ -38,18 +38,21 @@ class BasicSubscriber2(BasicSubscriber):
 
 class BasicPublisher(PublisherInterface):
 
+    count = 0
     async def produce(self):
 
-        for v in range(0, 5):
-            return Event('test', time.time(), v)
+        cls = self.__class__
+        v = cls.count
+        cls.count += 1
+
+        return Event('test', time.time(), v)
 
 
 class BadPublisher(PublisherInterface):
 
     async def produce(self):
 
-        for v in range(0, 5):
-            return v
+        return "not an event"
 
 
 def test_basic_dispatch():
@@ -59,7 +62,7 @@ def test_basic_dispatch():
 
     loop = asyncio.get_event_loop()
 
-    server = Dispatcher(publisher, [subscriber], loop=loop)
+    server = Dispatcher(publisher, subscriber, loop=loop)
     loop.run_until_complete(server.start(max_events=5))
 
 
@@ -93,8 +96,22 @@ def test_bad_event():
 
     loop = asyncio.get_event_loop()
 
-    server = Dispatcher(publisher, [subscriber], loop=loop)
     with pytest.raises(TypeError):
+
+        server = Dispatcher(publisher, subscriber, loop=loop)
+        loop.run_until_complete(server.start(max_events=1))
+
+
+def test_not_implemented():
+
+    publisher = PublisherInterface()
+    subscriber = SubscriberInterface()
+
+    loop = asyncio.get_event_loop()
+
+    with pytest.raises(NotImplementedError):
+
+        server = Dispatcher(publisher, subscriber, loop=loop)
         loop.run_until_complete(server.start(max_events=1))
 
 
@@ -106,14 +123,14 @@ def test_wrong_publisher_type():
     loop = asyncio.get_event_loop()
 
     with pytest.raises(TypeError):
-        server = Dispatcher(publisher, [subscriber], loop=loop)
+        server = Dispatcher(publisher, subscriber, loop=loop)
 
     # A publisher without the publish method
     publisher = BasicPublisher()
     publisher.produce = None
 
     with pytest.raises(TypeError):
-        server = Dispatcher(publisher, [subscriber], loop=loop)
+        server = Dispatcher(publisher, subscriber, loop=loop)
 
 def test_wrong_subscriber_type():
 
@@ -128,8 +145,10 @@ def test_add_remove_handler():
 
     handler = lambda x: x
 
-    server.add_handler('test', handler)
-    server.remove_handler('test', handler)
+    server.add_handler(handler, 'test')
+    server.remove_handler(handler, 'test')
+
+    assert len(server.get_events()) == 0
 
     with pytest.raises(TypeError):
         server.add_handler('test', 'not_a_handler')
