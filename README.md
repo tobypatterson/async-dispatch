@@ -4,7 +4,7 @@ Python Asyncio-enabled Event Dispatcher Based on Publishers and Subscribers
 
 ## Build Status
 
-
+![TravisCI](https://travis-ci.org/tobypatterson/async-dispatch.svg?branch=master)
 
 ## Requirements
 
