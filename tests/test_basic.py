@@ -3,6 +3,12 @@ import pytest
 import asyncio
 import time
 
+import sys
+from os.path import dirname, abspath
+
+parent_path = dirname(dirname(abspath(__file__)))
+sys.path.append(parent_path)
+
 from async_dispatch import Dispatcher, SubscriberInterface, PublisherInterface, Event
 
 
