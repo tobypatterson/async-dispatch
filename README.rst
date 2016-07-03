@@ -8,6 +8,8 @@ Build Status
 
 .. image:: https://travis-ci.org/tobypatterson/async-dispatch.svg?branch=master
 
+.. image:: https://readthedocs.org/projects/async-dispatch/badge/?version=latest
+
 Requirements
 ------------
 
@@ -36,3 +38,10 @@ Documentation will soon be available on readthedocs.  Here is a brief summary.
 
    server = Dispatcher(publisher, subscriber, loop=loop)
    loop.run_until_complete(server.start(max_events=5))
+
+Documentation
+-------------
+
+Best to `Read The Docs`_.
+
+.. _Read The Docs: http://async-dispatch.readthedocs.io/en/latest/index.html

@@ -6,6 +6,8 @@
 Welcome to Async Dispatch's documentation!
 ==========================================
 
+Python Asyncio-enabled Event Dispatcher Based on Publishers and Subscribers.
+
 .. toctree::
    :maxdepth: 2
 
@@ -13,10 +15,4 @@ Welcome to Async Dispatch's documentation!
    quickstart
    api
 
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
 
