@@ -128,7 +128,7 @@ class Dispatcher:
         if event_name in self._subscribers:
             items_to_del = []
             for i, h in enumerate(self._subscribers[event_name]):
-                if h is handler:
+                if h == handler:
                     items_to_del.append(i)
             for i in items_to_del:
                 del self._subscribers[event_name][i]
