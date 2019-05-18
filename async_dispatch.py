@@ -68,14 +68,7 @@ class Dispatcher:
         if not isinstance(subscriber, SubscriberInterface):
             raise TypeError('Expects an instance of the SubscriberInterface')
 
-        events = subscriber.get_event_listeners()
-        t = type(events)
-        if t is dict:
-            pass
-        elif t is list:
-            events = {event_name: subscriber.consume for event_name in events}
-        else:
-            raise TypeError('Cannot determine events from {}'.format(t))
+        events = self._get_events(subscriber)
 
         for event_name, handler in events.items():
 
@@ -87,7 +80,48 @@ class Dispatcher:
 
         return self
 
+    def remove_subscriber(self, subscriber):
+        """
+        Removes a subscriber and its event handlers.
 
+        :param subscriber: SubscriberInterface
+        :return: self
+        """
+        if not isinstance(subscriber, SubscriberInterface):
+            raise TypeError('Expects an instance of the SubscriberInterface')
+
+        events = self._get_events(subscriber)
+
+        for event_name, handler in events.items():
+            # A string could be the name of the handler
+            if isinstance(handler, str) and hasattr(subscriber, handler):
+                handler = getattr(subscriber, handler)
+
+            self.remove_handler(handler, event_name)
+
+        return self
+
+    @staticmethod
+    def _get_events(subscriber):
+        """Returns a dictionary containing the subscribers event handlers.
+
+        :param subscriber: SubscriberInterface
+        :return: dict containing event handlers
+        :rtype: dict[str, str]
+        """
+        if not isinstance(subscriber, SubscriberInterface):
+            raise TypeError('Expects an instance of the SubscriberInterface')
+
+        events = subscriber.get_event_listeners()
+        t = type(events)
+        if t is dict:
+            pass
+        elif t is list:
+            events = {event_name: subscriber.consume for event_name in events}
+        else:
+            raise TypeError('Cannot determine events from {}'.format(t))
+
+        return events
 
     def add_handler( self, handler, event_name):
         """
@@ -128,7 +162,7 @@ class Dispatcher:
         if event_name in self._subscribers:
             items_to_del = []
             for i, h in enumerate(self._subscribers[event_name]):
-                if h is handler:
+                if h == handler:
                     items_to_del.append(i)
             for i in items_to_del:
                 del self._subscribers[event_name][i]
